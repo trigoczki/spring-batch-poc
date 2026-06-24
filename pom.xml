@@ -28,6 +28,11 @@
       <artifactId>spring-boot-starter-webmvc</artifactId>
       <groupId>org.springframework.boot</groupId>
     </dependency>
+    <dependency>
+      <artifactId>spring-boot-starter-validation</artifactId>
+      <groupId>org.springframework.boot</groupId>
+    </dependency>
+
 
     <dependency>
       <artifactId>spring-boot-devtools</artifactId>
