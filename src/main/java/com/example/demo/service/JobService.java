@@ -8,11 +8,13 @@ import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JobService {
 
+  @Qualifier("asyncJobOperator")
   private final JobOperator jobOperator;
   private final JobRegistry jobRegistry;
 
@@ -29,7 +31,6 @@ public class JobService {
           .addDate("run_at", new Date())
           .toJobParameters();
 
-      // TODO find a way to start job async, we need to return the job ID
       JobExecution jobExecution = jobOperator.start(job, jobParameters);
       long jobId = jobExecution.getId();
       return new JobDto(jobId, "personModifierJob");

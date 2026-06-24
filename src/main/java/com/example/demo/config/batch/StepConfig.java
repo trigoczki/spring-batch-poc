@@ -3,11 +3,9 @@ package com.example.demo.config.batch;
 import com.example.demo.service.tasklet.AddressModifierTasklet;
 import com.example.demo.service.tasklet.NameModifierTasklet;
 import com.example.demo.service.tasklet.OccupationModifierTasklet;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -15,39 +13,27 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class StepConfig {
 
-  @Autowired
-  private JobRepository jobRepository;
-
-  @Autowired
-  private PlatformTransactionManager transactionManager;
-
-  @Autowired
-  private AddressModifierTasklet addressModifierTasklet;
-
-  @Autowired
-  private NameModifierTasklet nameModifierTasklet;
-
-  @Autowired
-  private OccupationModifierTasklet occupationModifierTasklet;
-
   @Bean
-  public Step nameModificationStep() {
+  public Step nameModificationStep(JobRepository jobRepository,
+      PlatformTransactionManager transactionManager, NameModifierTasklet tasklet) {
     return new StepBuilder("nameModificationStep", jobRepository)
-        .tasklet(nameModifierTasklet, transactionManager)
+        .tasklet(tasklet, transactionManager)
         .build();
   }
 
   @Bean
-  public Step addressModificationStep() {
+  public Step addressModificationStep(JobRepository jobRepository,
+      PlatformTransactionManager transactionManager, AddressModifierTasklet tasklet) {
     return new StepBuilder("addressModificationStep", jobRepository)
-        .tasklet(addressModifierTasklet, transactionManager)
+        .tasklet(tasklet, transactionManager)
         .build();
   }
 
   @Bean
-  public Step occupationModificationStep() {
+  public Step occupationModificationStep(JobRepository jobRepository,
+      PlatformTransactionManager transactionManager, OccupationModifierTasklet tasklet) {
     return new StepBuilder("occupationModificationStep", jobRepository)
-        .tasklet(occupationModifierTasklet, transactionManager)
+        .tasklet(tasklet, transactionManager)
         .build();
   }
 
