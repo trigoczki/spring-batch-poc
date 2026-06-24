@@ -7,20 +7,19 @@ import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableBatchProcessing
 @EnableJdbcJobRepository
-public class PersonModifierJobConfig {
+public class BatchJobConfig {
 
-  @Autowired
-  private Map<String, Step> stepRegistry;
-
+  /**
+   * One-shot
+   */
   @Bean
-  public Job personModifierJob(JobRepository jobRepository) {
+  public Job personModifierJob(JobRepository jobRepository, Map<String, Step> stepRegistry) {
     return new JobBuilder("personModifierJob", jobRepository)
         .start(stepRegistry.get("nameModificationStep"))
         .next(stepRegistry.get("addressModificationStep"))

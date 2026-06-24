@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.model.dto.PersonDto;
 import com.example.demo.model.entity.Person;
 import com.example.demo.repository.PersonRepository;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +29,13 @@ public class PersonService {
   }
 
   @Transactional(readOnly = true)
-  public Person getById(Long id) {
-    return personRepository.getReferenceById(id);
+  public boolean existsById(Long id) {
+    return personRepository.existsById(id);
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<Person> getById(Long id) {
+    return personRepository.findById(id);
   }
 
 

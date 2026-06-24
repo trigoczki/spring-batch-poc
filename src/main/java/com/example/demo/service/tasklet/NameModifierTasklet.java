@@ -2,6 +2,7 @@ package com.example.demo.service.tasklet;
 
 import com.example.demo.model.entity.Person;
 import com.example.demo.service.PersonService;
+import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.StepContribution;
@@ -23,7 +24,12 @@ public class NameModifierTasklet implements Tasklet {
       throws InterruptedException {
     Long personId = (Long) chunkContext.getStepContext().getJobParameters().get("person_id");
 
-    Person person = personService.getById(personId);
+    Optional<Person> personOptional = personService.getById(personId);
+    if (personOptional.isEmpty()) {
+      return RepeatStatus.FINISHED;
+    }
+
+    Person person = personOptional.get();
     person.setName(person.getName() + "_modified");
 
     //    Processing simulation

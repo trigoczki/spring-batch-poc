@@ -2,6 +2,7 @@ package com.example.demo.service.tasklet;
 
 import com.example.demo.model.entity.Person;
 import com.example.demo.service.PersonService;
+import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.StepContribution;
@@ -22,8 +23,12 @@ public class AddressModifierTasklet implements Tasklet {
   public @Nullable RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
       throws InterruptedException {
     Long personId = (Long) chunkContext.getStepContext().getJobParameters().get("person_id");
+    Optional<Person> personOptional = personService.getById(personId);
+    if (personOptional.isEmpty()) {
+      return RepeatStatus.FINISHED;
+    }
 
-    Person person = personService.getById(personId);
+    Person person = personOptional.get();
     person.setAddress(person.getAddress() + "_modified");
 
     //    Processing simulation
