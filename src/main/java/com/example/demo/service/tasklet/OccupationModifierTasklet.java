@@ -1,5 +1,6 @@
 package com.example.demo.service.tasklet;
 
+import com.example.demo.constant.JobParams;
 import com.example.demo.model.entity.Person;
 import com.example.demo.service.PersonService;
 import java.util.Optional;
@@ -22,7 +23,8 @@ public class OccupationModifierTasklet implements Tasklet {
   @Override
   public @Nullable RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
       throws InterruptedException {
-    Long personId = (Long) chunkContext.getStepContext().getJobParameters().get("person_id");
+    Long personId = (Long) chunkContext.getStepContext().getJobParameters()
+        .get(JobParams.PERSON_ID);
 
     Optional<Person> personOptional = personService.getById(personId);
     if (personOptional.isEmpty()) {

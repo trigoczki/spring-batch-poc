@@ -20,28 +20,28 @@ public class Scheduler {
     this.personService = personService;
   }
 
-  @Scheduled(fixedRate = 10000)
+  @Scheduled(cron = "0 0 0 * * *")
   public void runJob1() {
     if (personService.existsById(1L)) {
-      jobService.executePersonModifierJob(1L);
+      jobService.executeOneShotPersonModifierJob(1L);
     } else {
       logger.warn("Person ID:1 not found! Job skipped!");
     }
   }
 
-  @Scheduled(fixedRate = 10000)
+  @Scheduled(cron = "0 0 0 * * *")
   public void runJob2() {
     if (personService.existsById(2L)) {
-      jobService.executePersonModifierJob(2L);
+      jobService.executeOneShotPersonModifierJob(2L);
     } else {
       logger.warn("Person ID:2 not found! Job skipped!");
     }
   }
 
-  @Scheduled(fixedRate = 10000)
+  @Scheduled(cron = "0 0 0 * * *")
   public void runJob3() {
     if (personService.existsById(3L)) {
-      jobService.executePersonModifierJob(3L);
+      jobService.executeOneShotPersonModifierJob(3L);
     } else {
       logger.warn("Person ID:3 not found! Job skipped!");
     }

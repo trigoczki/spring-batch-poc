@@ -1,5 +1,6 @@
 package com.example.demo.config.batch;
 
+import com.example.demo.model.enums.StepType;
 import com.example.demo.service.tasklet.AddressModifierTasklet;
 import com.example.demo.service.tasklet.NameModifierTasklet;
 import com.example.demo.service.tasklet.OccupationModifierTasklet;
@@ -16,7 +17,7 @@ public class StepConfig {
   @Bean
   public Step nameModificationStep(JobRepository jobRepository,
       PlatformTransactionManager transactionManager, NameModifierTasklet tasklet) {
-    return new StepBuilder("nameModificationStep", jobRepository)
+    return new StepBuilder(StepType.ADDRESS.getStepName(), jobRepository)
         .tasklet(tasklet, transactionManager)
         .build();
   }
@@ -24,7 +25,7 @@ public class StepConfig {
   @Bean
   public Step addressModificationStep(JobRepository jobRepository,
       PlatformTransactionManager transactionManager, AddressModifierTasklet tasklet) {
-    return new StepBuilder("addressModificationStep", jobRepository)
+    return new StepBuilder(StepType.ADDRESS.getStepName(), jobRepository)
         .tasklet(tasklet, transactionManager)
         .build();
   }
@@ -32,7 +33,7 @@ public class StepConfig {
   @Bean
   public Step occupationModificationStep(JobRepository jobRepository,
       PlatformTransactionManager transactionManager, OccupationModifierTasklet tasklet) {
-    return new StepBuilder("occupationModificationStep", jobRepository)
+    return new StepBuilder(StepType.OCCUPATION.getStepName(), jobRepository)
         .tasklet(tasklet, transactionManager)
         .build();
   }
