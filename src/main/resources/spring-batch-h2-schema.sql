@@ -1,5 +1,5 @@
 -- Official documentation: https://docs.spring.io/spring-batch/reference/schema-appendix.html
--- Batabase engine specific schema located in dependency org.springframework.batch.core, schema-*.sql files, no MSSQL though
+-- Database engine specific schema located in package org.springframework.batch.core, schema-*.sql files, no MSSQL though
 
 
 DROP TABLE BATCH_STEP_EXECUTION_CONTEXT IF EXISTS;

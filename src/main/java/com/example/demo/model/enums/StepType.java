@@ -1,9 +1,9 @@
 package com.example.demo.model.enums;
 
 public enum StepType {
-  ADDRESS("addressModificationStep", "steppedAddressModificationJob"),
-  NAME("nameModificationStep", "steppedNameModificationJob"),
-  OCCUPATION("occupationModificationStep", "steppedOccupationModificationJob");
+  ADDRESS("addressModificationStep", "userControlledAddressModificationJob"),
+  NAME("nameModificationStep", "userControlledNameModificationJob"),
+  OCCUPATION("occupationModificationStep", "userControlledOccupationModificationJob");
 
   private final String stepName;
   private final String jobName;

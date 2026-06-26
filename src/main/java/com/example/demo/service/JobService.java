@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.constant.JobNames;
 import com.example.demo.constant.JobParams;
 import com.example.demo.exception.JobNotFoundException;
 import com.example.demo.exception.LastStepNotCompletedException;
@@ -34,16 +35,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class JobService {
 
+  private final List<StepType> stepOrder;
+
   private final ContinuableJobRepository continuableJobRepository;
   private final JobRepository jobRepository;
   @Qualifier("asyncJobOperator")
   private final JobOperator jobOperator;
   private final JobRegistry jobRegistry;
-  private final LinkedList<StepType> stepOrder;
   Logger logger = LoggerFactory.getLogger(JobService.class);
 
   public JobService(ContinuableJobRepository continuableJobRepository, JobOperator jobOperator,
-      JobRegistry jobRegistry, JobRepository jobRepository, LinkedList<StepType> stepOrder) {
+      JobRegistry jobRegistry, JobRepository jobRepository, List<StepType> stepOrder) {
     this.continuableJobRepository = continuableJobRepository;
     this.jobOperator = jobOperator;
     this.jobRegistry = jobRegistry;
@@ -53,7 +55,7 @@ public class JobService {
 
   public JobDto executeOneShotPersonModifierJob(Long personId) {
     try {
-      Job job = jobRegistry.getJob("personModifierJob");
+      Job job = jobRegistry.getJob(JobNames.PERSON_MODIFIER_JOB);
       JobParameters jobParameters = new JobParametersBuilder()
           .addLong(JobParams.PERSON_ID, personId)
           .addDate(JobParams.RUN_AT, new Date())
@@ -61,7 +63,7 @@ public class JobService {
 
       JobExecution jobExecution = jobOperator.start(job, jobParameters);
       long jobId = jobExecution.getId();
-      return new JobDto(jobId, "personModifierJob");
+      return new JobDto(jobId, JobNames.PERSON_MODIFIER_JOB);
     } catch (Exception e) {
       logger.error("Error executing personModifierJob: {}", e.getMessage(), e);
     }

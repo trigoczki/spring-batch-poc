@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * Schedule one-shot batch jobs. Can be confiured by cron, too.
+ * Schedule one-shot batch jobs.
  */
 @Component
 public class Scheduler {
