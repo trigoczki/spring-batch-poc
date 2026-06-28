@@ -2,6 +2,7 @@ package com.example.demo.config.batch;
 
 import com.example.demo.constant.JobNames;
 import com.example.demo.model.enums.StepType;
+import com.example.demo.service.listener.StatusUpdater;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -58,25 +59,28 @@ public class PersonModificationJobConfig {
 
   @Bean
   public Job userControlledNameModificationJob(JobRepository jobRepository,
-      Map<String, Step> stepRegistry) {
+      Map<String, Step> stepRegistry, StatusUpdater statusUpdater) {
     return new JobBuilder(StepType.NAME.getJobName(), jobRepository)
         .start(stepRegistry.get(StepType.NAME.getStepName()))
+        .listener(statusUpdater)
         .build();
   }
 
   @Bean
   public Job userControlledAddressModificationJob(JobRepository jobRepository,
-      Map<String, Step> stepRegistry) {
+      Map<String, Step> stepRegistry, StatusUpdater statusUpdater) {
     return new JobBuilder(StepType.ADDRESS.getJobName(), jobRepository)
         .start(stepRegistry.get(StepType.ADDRESS.getStepName()))
+        .listener(statusUpdater)
         .build();
   }
 
   @Bean
   public Job userControlledOccupationModificationJob(JobRepository jobRepository,
-      Map<String, Step> stepRegistry) {
+      Map<String, Step> stepRegistry, StatusUpdater statusUpdater) {
     return new JobBuilder(StepType.OCCUPATION.getJobName(), jobRepository)
         .start(stepRegistry.get(StepType.OCCUPATION.getStepName()))
+        .listener(statusUpdater)
         .build();
   }
 

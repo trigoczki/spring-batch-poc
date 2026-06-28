@@ -12,9 +12,8 @@ import com.example.demo.model.entity.UserControlledJobStep;
 import com.example.demo.model.enums.JobStatus;
 import com.example.demo.model.enums.StepStatus;
 import com.example.demo.model.enums.StepType;
-import com.example.demo.repository.ContinuableJobRepository;
+import com.example.demo.repository.UserControlledJobRepository;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,16 +36,17 @@ public class JobService {
 
   private final List<StepType> stepOrder;
 
-  private final ContinuableJobRepository continuableJobRepository;
+  private final UserControlledJobRepository userControlledJobRepository;
   private final JobRepository jobRepository;
   @Qualifier("asyncJobOperator")
   private final JobOperator jobOperator;
   private final JobRegistry jobRegistry;
   Logger logger = LoggerFactory.getLogger(JobService.class);
 
-  public JobService(ContinuableJobRepository continuableJobRepository, JobOperator jobOperator,
+  public JobService(UserControlledJobRepository userControlledJobRepository,
+      JobOperator jobOperator,
       JobRegistry jobRegistry, JobRepository jobRepository, List<StepType> stepOrder) {
-    this.continuableJobRepository = continuableJobRepository;
+    this.userControlledJobRepository = userControlledJobRepository;
     this.jobOperator = jobOperator;
     this.jobRegistry = jobRegistry;
     this.jobRepository = jobRepository;
@@ -84,7 +84,7 @@ public class JobService {
       UserControlledJob userControlledJob = new UserControlledJob();
       userControlledJob.setLastStepBatchJobExecutionId(jobId);
       userControlledJob.setStatus(JobStatus.IN_PROGRESS);
-      UserControlledJob savedJob = continuableJobRepository.save(userControlledJob);
+      UserControlledJob savedJob = userControlledJobRepository.save(userControlledJob);
 
       UserControlledJobStep jobStep = new UserControlledJobStep();
       jobStep.setExecutionId(jobId);
@@ -92,7 +92,7 @@ public class JobService {
       jobStep.setType(StepType.NAME);
       jobStep.setStatus(StepStatus.IN_PROGRESS);
       userControlledJob.getSteps().add(jobStep);
-      continuableJobRepository.save(userControlledJob);
+      userControlledJobRepository.save(userControlledJob);
 
       return new JobDto(savedJob.getId(), StepType.NAME.getJobName());
     } catch (Exception e) {
@@ -103,9 +103,14 @@ public class JobService {
   }
 
   public SteppedJobDto continueUserControlledJob(Long jobId) {
-    Optional<UserControlledJob> optionalContinuableJob = continuableJobRepository.findById(jobId);
+    Optional<UserControlledJob> optionalContinuableJob = userControlledJobRepository.findById(
+        jobId);
     if (optionalContinuableJob.isPresent()) {
       UserControlledJob userControlledJob = optionalContinuableJob.get();
+      if (JobStatus.COMPLETED.equals(userControlledJob.getStatus())) {
+        return new SteppedJobDto(jobId, JobStatus.COMPLETED,
+            true, true, true);
+      }
       JobExecution jobExecution = jobRepository.getJobExecution(
           userControlledJob.getLastStepBatchJobExecutionId());
 
@@ -119,10 +124,6 @@ public class JobService {
         throw new LastStepNotCompletedException();
       }
 
-      userControlledJob.getSteps().stream()
-          .filter(
-              s -> userControlledJob.getLastStepBatchJobExecutionId().equals(s.getExecutionId()))
-          .forEach(s -> s.setStatus(stepStatus));
       Optional<UserControlledJobStep> optionalLastStep = userControlledJob.getSteps().stream()
           .filter(
               s -> userControlledJob.getLastStepBatchJobExecutionId().equals(s.getExecutionId()))
@@ -133,8 +134,14 @@ public class JobService {
       }
 
       Long personId = jobExecution.getJobParameters().getLong(JobParams.PERSON_ID);
-      StepType nextStepType = stepOrder.get(
-          stepOrder.indexOf(optionalLastStep.get().getType()) + 1);
+      StepType nextStepType = stepOrder.get(Math.min(stepOrder.size() - 1,
+          stepOrder.indexOf(optionalLastStep.get().getType()) + 1));
+      if (userControlledJob.getSteps().stream()
+          .anyMatch(s -> nextStepType.equals(s.getType()) && StepStatus.COMPLETED.equals(
+              s.getStatus()))) {
+        return new SteppedJobDto(jobId, JobStatus.COMPLETED,
+            true, true, true);
+      }
 
       Job job = jobRegistry.getJob(nextStepType.getJobName());
       JobParameters jobParameters = new JobParametersBuilder()
@@ -158,7 +165,7 @@ public class JobService {
       jobStep.setStatus(StepStatus.IN_PROGRESS);
       userControlledJob.setLastStepBatchJobExecutionId(newJobId);
       userControlledJob.getSteps().add(jobStep);
-      continuableJobRepository.save(userControlledJob);
+      userControlledJobRepository.save(userControlledJob);
       List<UserControlledJobStep> steps = userControlledJob.getSteps();
 
       return new SteppedJobDto(jobId, userControlledJob.getStatus(),
@@ -170,25 +177,10 @@ public class JobService {
   }
 
   public SteppedJobDto getUserControlledJobStatus(Long jobId) {
-    Optional<UserControlledJob> optionalContinuableJob = continuableJobRepository.findById(jobId);
+    Optional<UserControlledJob> optionalContinuableJob = userControlledJobRepository.findById(
+        jobId);
     if (optionalContinuableJob.isPresent()) {
       UserControlledJob userControlledJob = optionalContinuableJob.get();
-      JobExecution jobExecution = jobRepository.getJobExecution(
-          userControlledJob.getLastStepBatchJobExecutionId());
-      if (Objects.isNull(jobExecution)) {
-        logger.error("Job not found! ID: {}", jobId);
-        throw new JobNotFoundException();
-      }
-
-      StepStatus stepStatus = convertStatus(jobExecution.getStatus());
-      if (!StepStatus.COMPLETED.equals(stepStatus)) {
-        throw new LastStepNotCompletedException();
-      }
-
-      userControlledJob.getSteps().stream()
-          .filter(
-              s -> userControlledJob.getLastStepBatchJobExecutionId().equals(s.getExecutionId()))
-          .forEach(s -> s.setStatus(stepStatus));
 
       List<UserControlledJobStep> steps = userControlledJob.getSteps();
       boolean isAddressFinished = isStepFinished(steps, StepType.ADDRESS);
@@ -198,7 +190,7 @@ public class JobService {
       if (isOccupationFinished) {
         userControlledJob.setStatus(JobStatus.COMPLETED);
       }
-      continuableJobRepository.save(userControlledJob);
+      userControlledJobRepository.save(userControlledJob);
       return new SteppedJobDto(jobId, userControlledJob.getStatus(), isAddressFinished,
           isNameFinished,
           isOccupationFinished);
